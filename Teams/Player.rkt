@@ -19,6 +19,9 @@
 (define (get-x player)                 ;;returns x coordinate
   (dna-positionx (
                player-dna player)))
+(define (get-y player)                 ;;returns x coordinate
+  (dna-positiony (
+               player-dna player)))
 
 (provide (all-defined-out))
 ;;(get-x (car team)) ;;test
