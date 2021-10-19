@@ -19,7 +19,7 @@
 (define (get-x player)                 ;;returns x coordinate
   (dna-positionx (
                player-dna player)))
-(define (get-y player)                 ;;returns x coordinate
+(define (get-y player)                 ;;returns y coordinate
   (dna-positiony (
                player-dna player)))
 
