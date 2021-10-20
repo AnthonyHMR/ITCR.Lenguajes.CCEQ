@@ -3,6 +3,14 @@
 
 #|------------------------------ID's list generator----------------------------------------------|#
 (define (id-generator n id-list start)
+    #| id-generator: creates a numbers list (2...21)
+     params:
+           n: number of ids
+           id-list: empty list
+           start: init counter
+     output:
+           id-list: list ids
+  |#
   (cond ((= 0 n)
          id-list)
         (else
@@ -11,14 +19,24 @@
 (define players-ids (id-generator 20 '() 1)) ;;ids list for field players
 #|------------------------------GOALKEEPERS----------------------------------------------|#
 (define (add-gk num_gk gk_list)
+  #| add-gk: creates a goalkeepers list
+     params:
+           num_gk: number of goalkeepers
+           gk_list: empty list
+     output:
+           gk_list: list of goalkeepers
+  |#
+  (define speed (+ (random 7) 1))
+  (define force (+ (random 8) 1))
+  (define shooting (+ (random 7) 1))
   (cond ((= 0 num_gk)
          gk_list)
         ((= 1 num_gk)
-         (define dna1 (dna (random 7) (random 8) 1175 290 (random 8)))
+         (define dna1 (dna speed force 1175 290 shooting (calc-ball-dist 1175 290 xtarget ytarget)))
          (define goalkeeper(player "gk" dna1 22))
          (add-gk (sub1 num_gk) (append gk_list (list goalkeeper))))
         (else
-         (define dna1 (dna (random 7) (random 8) 5 290 (random 8)))
+         (define dna1 (dna speed force 5 290 shooting (calc-ball-dist 5 290 xtarget ytarget)))
          (define goalkeeper(player "gk" dna1 1))
          (add-gk (sub1 num_gk) (append gk_list (list goalkeeper))))
         )
@@ -33,11 +51,12 @@
            list-def: empty list that will store dna's
            limit: field limit position for a player
   |#
-  (define speed (random 7))
-  (define force (random 8))
+  (define speed (+ (random 7) 1))
+  (define force (+ (random 8) 1))
   (define xpos (+ limit (random 390))) ;;x coordinate limit for players
-  (define ypos (random 600))
-  (define dna3 (dna speed force xpos ypos (random 7))) ;;dna instance
+  (define ypos (+ (random 590) 10))
+  (define shooting (+ (random 7) 1))
+  (define dna3 (dna speed force xpos ypos shooting (calc-ball-dist xpos ypos xtarget ytarget))) ;;dna instance
   (cond ((= 0 numdef) ;; return list-def when dna's are set
       list-def)
         (else
@@ -65,7 +84,7 @@
   (cond((= 0 n) list)
        (else
         (cut-list (sub1 n) (cdr list)))))
-#|------------------------------HOW TO SET A TEAM: team 1----------------------------------------------|#
+#|------------------------------HOW TO SET A TEAM: team 1 (random population)----------------------------------------------|#
 (define def-dnas(init-players-dna 4 '() 10)) ;;init a list of 4 defenders dna
 (define defenders (init-players-list 4 '() def-dnas "def" players-ids))
 
@@ -78,8 +97,28 @@
 (define forwards (init-players-list 2 '() for-dnas "fwd" fwd-ids))
 (define team1 (append (list (car gk_list))defenders midfields forwards)) ;;TEAM LIST
 
-(define team2-ids (cut-list 2 fwd-ids))
-team2-ids
+(define team2-ids (cut-list 2 fwd-ids));;remaining ids numbers
+#|------------------------------HOW TO SET A TEAM: selection----------------------------------------------|#
+(define (fitness players fitlist n k)
+  #|
+    fitness calculates the fitness percentage value for a given list of players
+    input:
+          players: list of players
+          fitlist: list with fitness value and players
+          n: length of the list
+          k: counter
+    output:
+          fitlist: a list of pairs (player fitness) for a given team
+   |#
+  (cond ((>= k n)
+         fitlist)
+        (else
+         (define player (list-ref players k))
+         (define total_points (+ (get-speed player) (get-force player) (get-shooting player) (get-ball-dist player)))
+         (define fit_percentage (* 100 (/ total_points 40)))
+         (fitness players (append fitlist (list (list  player fit_percentage))) n (add1 k))
+        )))
+
 ;;DATA CONSULTS
 (length team1)
 (player-id (list-ref team1 0))
@@ -98,7 +137,8 @@ team2-ids
 (player-role (list-ref team1 2))
 (get-x (list-ref team1 0)) ;;position for goalkeeper on team1
 (get-y (list-ref team1 0))
-
+(get-ball-dist (list-ref team1 0))
+(fitness team1 '() (length team1) 0);; get fitness for an individual in a team
 ;;(provide (all-defined-out))
 #|------------------------------HOW TO SET A TEAM:team 2----------------------------------------------|#
 
